@@ -15,7 +15,7 @@ struct Creneau {
     int coefficient_priorite;
 };
 
-// Structure pour représenter un bénévole
+// Structure afin de représenter un bénévole
 struct Benevole {
     string nom;
     vector<string> choix_coequipiers;
