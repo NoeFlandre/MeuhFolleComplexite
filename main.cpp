@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
+#include <unordered_map> // Ajout pour utiliser unordered_map
 
 using namespace std;
 
@@ -19,7 +20,7 @@ struct Creneau {
 struct Benevole {
     string nom;
     vector<string> choix_coequipiers;
-    vector<string> choix_types_mission;
+    unordered_map<string, int> score_types_mission; // Modifié pour inclure les scores des types de mission
 };
 
 struct Equipe {
@@ -86,11 +87,12 @@ vector<Benevole> lireBenevoles(const string& nom_fichier) {
             }
         }
 
+        // Initialisation des scores des types de mission
         for (int j = 0; j < 3; ++j) {
             string choix;
             getline(fichier, choix, ';');
             if (!choix.empty()) {
-                benevole.choix_types_mission.push_back(choix);
+                benevole.score_types_mission[choix] = 3 - j; // Attribue les scores 3, 2, 1
             }
         }
 
@@ -110,13 +112,27 @@ int trouverBenevoleMaxPriorite(const vector<Benevole>& benevoles, const Creneau&
     for (size_t i = 0; i < benevoles.size(); ++i) {
         if (!benevole_utilise[i]) {
             const auto& benevole = benevoles[i];
-            for (const auto& choix : benevole.choix_types_mission) {
-                if (choix == creneau.type) {
-                    int priorite = benevole.choix_coequipiers[0] == creneau.libelle ? 200 : (benevole.choix_coequipiers[1] == creneau.libelle ? 100 : 0);
-                    if (priorite > max_priorite) {
-                        max_priorite = priorite;
-                        index_benevole_max_priorite = i;
-                    }
+
+            // Vérifier si le type de mission du créneau est parmi les choix préférés du bénévole
+            auto it = benevole.score_types_mission.find(creneau.type);
+            if (it != benevole.score_types_mission.end()) {
+                // Ici, 'it->second' représente le score pour le type de mission du créneau
+                // Vous pouvez maintenant utiliser 'it->second' pour le calcul de la priorité
+
+                // Calcul du score pour le choix de coéquipier
+                int score_choix_coequipier = 0;
+                if (!benevole.choix_coequipiers.empty() && benevole.choix_coequipiers[0] == creneau.libelle) {
+                    score_choix_coequipier = 200;
+                } else if (benevole.choix_coequipiers.size() > 1 && benevole.choix_coequipiers[1] == creneau.libelle) {
+                    score_choix_coequipier = 100;
+                }
+
+                // Le score total tient compte du choix de coéquipier et du type de mission
+                int score_total = score_choix_coequipier + it->second; // Ajoutez ici d'autres critères au besoin
+
+                if (score_total > max_priorite) {
+                    max_priorite = score_total;
+                    index_benevole_max_priorite = i;
                 }
             }
         }
