@@ -1,0 +1,9 @@
+Solution : 
+Cr Cr_1;Bar;ben_1;ben_2
+Cr Cr_2;Bar;ben_13;ben_16
+Cr Cr_6;Camping;ben_3;ben_4
+Cr Cr_10;Entree;ben_5;ben_6
+Cr Cr_11;Entree;ben_14;ben_15
+Cr Cr_14;Secu;ben_7;ben_8
+Cr Cr_15;Secu;ben_9;ben_19
+Cr Cr_19;Snack;ben_10;ben_11

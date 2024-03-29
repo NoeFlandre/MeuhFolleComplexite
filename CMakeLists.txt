@@ -3,4 +3,5 @@ project(MeuhFolle)
 
 set(CMAKE_CXX_STANDARD 23)
 
-add_executable(MeuhFolle main.cpp)
+add_executable(MeuhFolle main.cpp
+)

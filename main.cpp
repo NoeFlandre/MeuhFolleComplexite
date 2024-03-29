@@ -22,6 +22,13 @@ struct Benevole {
     vector<string> choix_types_mission;
 };
 
+struct Equipe {
+    string benevole1;
+    string benevole2;
+    // On ajoute une propriété pour tenir compte du score de l'équipe en fonction des préférences
+    int score = 0;
+};
+
 // Fonction pour lire les données des créneaux à partir du fichier
 vector<Creneau> lireCreneaux(const string& nom_fichier) {
     vector<Creneau> creneaux;
