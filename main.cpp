@@ -19,15 +19,14 @@ struct Creneau {
 // Structure afin de représenter un bénévole
 struct Benevole {
     string nom;
-    vector<string> choix_coequipiers;
-    unordered_map<string, int> score_types_mission; // Modifié pour inclure les scores des types de mission
+    unordered_map<string, int> score_coequipiers; // Nouveau: pour les scores des coéquipiers
+    unordered_map<string, int> score_types_mission; // Pour les scores des types de mission
 };
 
 struct Equipe {
     string benevole1;
     string benevole2;
-    // On ajoute une propriété pour tenir compte du score de l'équipe en fonction des préférences
-    int score = 0;
+    int score = 0; // Pour tenir compte du score de l'équipe en fonction des préférences
 };
 
 // Fonction pour lire les données des créneaux à partir du fichier
@@ -36,11 +35,11 @@ vector<Creneau> lireCreneaux(const string& nom_fichier) {
     ifstream fichier(nom_fichier);
     if (!fichier.is_open()) {
         cerr << "Erreur lors de l'ouverture du fichier " << nom_fichier << endl;
-        return creneaux;
+        return {}; // Retourne un vecteur vide en cas d'erreur
     }
 
     int nombre_creneaux;
-    fichier >> nombre_creneaux; // Lire le nombre de créneaux
+    fichier >> nombre_creneaux;
 
     string ligne;
     getline(fichier, ligne); // Lire la ligne vide après le nombre de créneaux
@@ -51,9 +50,9 @@ vector<Creneau> lireCreneaux(const string& nom_fichier) {
         getline(fichier, creneau.plage_horaire, ';');
         getline(fichier, creneau.type, ';');
         fichier >> creneau.coefficient_priorite;
+        getline(fichier, ligne); // Lire la fin de ligne pour passer à la prochaine entrée
 
         creneaux.push_back(creneau);
-        getline(fichier, ligne); // Lire la fin de ligne
     }
 
     fichier.close();
@@ -66,12 +65,11 @@ vector<Benevole> lireBenevoles(const string& nom_fichier) {
     ifstream fichier(nom_fichier);
     if (!fichier.is_open()) {
         cerr << "Erreur lors de l'ouverture du fichier " << nom_fichier << endl;
-        return benevoles;
+        return {}; // Retourne un vecteur vide en cas d'erreur
     }
 
     int nombre_benevoles;
-    fichier >> nombre_benevoles; // Lire le nombre de bénévoles
-
+    fichier >> nombre_benevoles;
     string ligne;
     getline(fichier, ligne); // Lire la ligne vide après le nombre de bénévoles
 
@@ -79,15 +77,12 @@ vector<Benevole> lireBenevoles(const string& nom_fichier) {
         Benevole benevole;
         getline(fichier, benevole.nom, ';');
 
-        for (int j = 0; j < 2; ++j) {
-            string choix;
-            getline(fichier, choix, ';');
-            if (!choix.empty()) {
-                benevole.choix_coequipiers.push_back(choix);
-            }
-        }
+        string choix1, choix2;
+        getline(fichier, choix1, ';');
+        getline(fichier, choix2, ';');
+        if (!choix1.empty()) benevole.score_coequipiers[choix1] = 200; // Score pour le premier choix
+        if (!choix2.empty()) benevole.score_coequipiers[choix2] = 100; // Score pour le second choix
 
-        // Initialisation des scores des types de mission
         for (int j = 0; j < 3; ++j) {
             string choix;
             getline(fichier, choix, ';');
@@ -97,7 +92,7 @@ vector<Benevole> lireBenevoles(const string& nom_fichier) {
         }
 
         benevoles.push_back(benevole);
-        getline(fichier, ligne); // Lire la fin de ligne
+        getline(fichier, ligne); // Lire la fin de ligne pour passer à la prochaine entrée
     }
 
     fichier.close();
@@ -113,23 +108,15 @@ int trouverBenevoleMaxPriorite(const vector<Benevole>& benevoles, const Creneau&
         if (!benevole_utilise[i]) {
             const auto& benevole = benevoles[i];
 
-            // Vérifier si le type de mission du créneau est parmi les choix préférés du bénévole
             auto it = benevole.score_types_mission.find(creneau.type);
             if (it != benevole.score_types_mission.end()) {
-                // Ici, 'it->second' représente le score pour le type de mission du créneau
-                // Vous pouvez maintenant utiliser 'it->second' pour le calcul de la priorité
-
-                // Calcul du score pour le choix de coéquipier
                 int score_choix_coequipier = 0;
-                if (!benevole.choix_coequipiers.empty() && benevole.choix_coequipiers[0] == creneau.libelle) {
-                    score_choix_coequipier = 200;
-                } else if (benevole.choix_coequipiers.size() > 1 && benevole.choix_coequipiers[1] == creneau.libelle) {
-                    score_choix_coequipier = 100;
+                auto itCo = benevole.score_coequipiers.find(creneau.libelle);
+                if (itCo != benevole.score_coequipiers.end()) {
+                    score_choix_coequipier = itCo->second;
                 }
 
-                // Le score total tient compte du choix de coéquipier et du type de mission
-                int score_total = score_choix_coequipier + it->second; // Ajoutez ici d'autres critères au besoin
-
+                int score_total = score_choix_coequipier + it->second;
                 if (score_total > max_priorite) {
                     max_priorite = score_total;
                     index_benevole_max_priorite = i;
@@ -142,19 +129,12 @@ int trouverBenevoleMaxPriorite(const vector<Benevole>& benevoles, const Creneau&
 }
 
 int main() {
-    // Lecture des créneaux depuis le fichier Pb0.txt
     vector<Creneau> creneaux = lireCreneaux("../Pb1.txt");
-
-    // Lecture des bénévoles depuis le fichier Pb0.txt
     vector<Benevole> benevoles = lireBenevoles("../Pb1.txt");
 
-    // Vecteur pour stocker les créneaux affectés à chaque bénévole
     vector<string> creneaux_affectes(benevoles.size(), "");
-
-    // Vecteur pour marquer les bénévoles déjà affectés à un créneau
     vector<bool> benevole_utilise(benevoles.size(), false);
 
-    // Affectation des créneaux aux bénévoles
     for (auto& creneau : creneaux) {
         int index_benevole = trouverBenevoleMaxPriorite(benevoles, creneau, benevole_utilise);
         if (index_benevole != -1) {
@@ -163,7 +143,6 @@ int main() {
         }
     }
 
-    // Affichage de la solution
     cout << "Solution : " << endl;
     for (size_t i = 0; i < benevoles.size(); ++i) {
         cout << "Benevole : " << benevoles[i].nom << ", Creneau : " << creneaux_affectes[i] << endl;
