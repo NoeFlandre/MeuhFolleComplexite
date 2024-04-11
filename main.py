@@ -1,3 +1,5 @@
+import time
+
 # Définition de la classe Creneau, qui modélise un créneau disponible pour l'affectation des bénévoles.
 class Creneau:
     def __init__(self, label, plage_horaire, type_mission, coefficient):
@@ -89,9 +91,20 @@ def optimiser_affectations(creneaux, benevoles):
 # Point d'entrée principal pour exécuter le programme.
 
 if __name__ == "__main__":
-    chemin_fichier = "Pb0.txt"
+    chemin_fichier = "Pb8.txt"
+
+    # Démarrage du chronomètre juste avant de commencer l'optimisation
+    start_time = time.time()
+
+    # Lecture des données et optimisation des affectations
     creneaux, benevoles = lire_fichier(chemin_fichier)
     affectations, valeur_objectif = optimiser_affectations(creneaux, benevoles)
+
+    # Arrêt du chronomètre après l'optimisation
+    end_time = time.time()
+
+    # Calcul du temps CPU en secondes
+    cpu_time = end_time - start_time
 
     print("Affectations optimales :")
     for affectation in affectations:
@@ -101,5 +114,6 @@ if __name__ == "__main__":
         type_mission = creneau.type_mission if creneau else "Inconnu"
         print(f"{creneau_label};{type_mission};{benevole_1};{benevole_2}")
     print(f"\nValeur de l'objectif : {valeur_objectif}")
+    print(f"Temps CPU : {cpu_time:.2f} secondes")  # Affiche le temps CPU avec 2 décimales
 
 
