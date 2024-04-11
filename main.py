@@ -87,13 +87,19 @@ def optimiser_affectations(creneaux, benevoles):
     return affectations, valeur_objectif
 
 # Point d'entrée principal pour exécuter le programme.
+
 if __name__ == "__main__":
     chemin_fichier = "Pb0.txt"
     creneaux, benevoles = lire_fichier(chemin_fichier)
     affectations, valeur_objectif = optimiser_affectations(creneaux, benevoles)
 
-    # Affichage des affectations optimales et de la valeur de l'objectif.
     print("Affectations optimales :")
     for affectation in affectations:
-        print(f"{affectation[0]} attribué à {affectation[1]} et {affectation[2]}")
+        creneau_label, benevole_1, benevole_2 = affectation
+        # Trouver le créneau correspondant au label pour obtenir le type de mission.
+        creneau = next((c for c in creneaux if c.label == creneau_label), None)
+        type_mission = creneau.type_mission if creneau else "Inconnu"
+        print(f"{creneau_label};{type_mission};{benevole_1};{benevole_2}")
     print(f"\nValeur de l'objectif : {valeur_objectif}")
+
+
